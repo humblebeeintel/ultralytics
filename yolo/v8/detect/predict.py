@@ -100,10 +100,14 @@ class DetectionPredictor(BasePredictor):
                     features = self.extract_appearance_features(
                         preds_copy, preds_for_feature_map, appearance_feature_layer, img)
 
+            # extract embedding for the crop itself to be used in ReID
+            appearance_feature_map, _, _ = self.extract_feature_map(
+                preds_copy, appearance_feature_layer)
+
             path = self.batch[0]
             img_path = path[i] if isinstance(path, list) else path
             results.append(Results(orig_img=orig_img, path=img_path,
-                           names=self.model.names, boxes=pred, appearance_features=features))
+                           names=self.model.names, boxes=pred, appearance_features=features, appearance_feature_map=appearance_feature_map))
 
         return results
 
