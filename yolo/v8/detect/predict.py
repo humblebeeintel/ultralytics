@@ -14,7 +14,8 @@ class DetectionPredictor(BasePredictor):
     def postprocess_original(self, preds, img, orig_imgs):
         """Post-processes predictions and returns a list of Results objects."""
         preds = ops.non_max_suppression(
-            preds,
+            preds[1], # preds[1] is the output (1, 84, 8400) tensorrt inference output
+            # preds, # preds[0] is the output (1, 84, 8400) .pt inference output
             self.args.conf,
             self.args.iou,
             agnostic=self.args.agnostic_nms,
@@ -51,6 +52,7 @@ class DetectionPredictor(BasePredictor):
             list: List of Results objects with detections and optional appearance features.
         """
         if appearance_feature_layer is None:
+            # return self.postprocess_original(preds[1], img, orig_imgs) for tensorrt
             return self.postprocess_original(preds, img, orig_imgs)
 
         # Extract the feature map if appearance_feature_layer is not None
@@ -60,7 +62,8 @@ class DetectionPredictor(BasePredictor):
 
         # Apply Non-Max Suppression (NMS)
         preds = ops.non_max_suppression(
-            preds,
+            preds[1], # preds[1] is the output (1, 84, 8400) tensorrt inference output
+            # preds, # preds[0] is the output (1, 84, 8400) .pt inference output
             self.args.conf,
             self.args.iou,
             agnostic=self.args.agnostic_nms,
@@ -108,8 +111,9 @@ class DetectionPredictor(BasePredictor):
         return results
 
     def extract_feature_map(self, pred, appearance_feature_layer):
-        feature_map = pred[-1][appearance_feature_layer][0,
-                                                         :, :, :]  # (48, 368, 640)
+        # feature_map = pred[-1][appearance_feature_layer][0, :, :, :]  # (48, 368, 640) layerN feature map for .pt
+        feature_map = pred[0][0, :, :, :]  # layer0 feature map for tensorrt
+
         reshaped_feature_map = feature_map.permute(1, 2, 0)  # (368, 640, 48)
         feature_dim = reshaped_feature_map.shape[-1]
         return feature_map, feature_dim, reshaped_feature_map

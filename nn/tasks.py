@@ -73,12 +73,11 @@ class BaseModel(nn.Module):
         Returns:
             (torch.Tensor): The last output of the model.
         """
-        y, dt = [], []  # outputs
+        y, dt = [], [] 
 
-        # will be used to store the activations of each layers
         import copy
-        layers = {}
-
+        layers = {} 
+        # layer0 = [] # used for converting to tensorrt
         for i, m in enumerate(self.model):
             if m.f != -1:  # not executed for first layer output
                 x = y[m.f] if isinstance(m.f, int) else [
@@ -88,13 +87,18 @@ class BaseModel(nn.Module):
 
             x = m(x)  # run
 
+            # if m.i == 0: # used for converting to tensorrt
+            #     layer0.append(x) # torch.Size([1, 48, 320, 320])
+
             layers['layer' + str(i)] = copy.deepcopy(x)
 
             y.append(x if m.i in self.save else None)  # save output
 
             if visualize:
                 feature_visualization(x, m.type, m.i, save_dir=visualize)
-        return x + (layers,)
+        return x + (layers,) # return the final output and the activations of the first layer
+        # return (x,layer0) # (torch.Size([1, 84, 8400]),  torch.Size([1, 48, 320, 320]) # used for converting to tensorrt
+    
         # here x contains y(final output (1,80+4,N)) and x contains 3 grids for anchorboxes
         # 1. 1,144,80,80
         # 2. 1,144,40,40
