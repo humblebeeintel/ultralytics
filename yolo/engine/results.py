@@ -90,7 +90,7 @@ class Results(SimpleClass):
         _keys (tuple): A tuple of attribute names for non-empty attributes.
     """
 
-    def __init__(self, orig_img, path, names, boxes=None, masks=None, probs=None, keypoints=None, appearance_features=None) -> None:
+    def __init__(self, orig_img, path, names, boxes=None, masks=None, probs=None, keypoints=None, appearance_features=None, appearance_feature_map=None) -> None:
         """Initialize the Results class."""
         self.orig_img = orig_img
         self.orig_shape = orig_img.shape[:2]
@@ -98,6 +98,7 @@ class Results(SimpleClass):
         self.boxes = Boxes(
             boxes, self.orig_shape) if boxes is not None else None
         self.appearance_features = appearance_features
+        self.appearance_feature_map = appearance_feature_map
         # native size or imgsz masks
         self.masks = Masks(
             masks, self.orig_shape) if masks is not None else None
@@ -110,7 +111,7 @@ class Results(SimpleClass):
         self.path = path
         self.save_dir = None
         self._keys = ('boxes', 'masks', 'probs', 'keypoints')
-        
+
     def __getitem__(self, idx):
         """Return a Results object for the specified index."""
         r = self.new()
@@ -313,37 +314,33 @@ class Results(SimpleClass):
         #             line += (*kpt, )
         #         line += (conf, ) * save_conf + (() if id is None else (id, ))
         #         texts.append(('%g ' * len(line)).rstrip() % line)
-        
+
         elif boxes:
             # Detect/segment/pose
             for j, d in enumerate(boxes):
                 # need to format each line in MOT format
-                id =  None if d.id is None else int(d.id.item())
-                
+                id = None if d.id is None else int(d.id.item())
+
                 # Extract the values and format them
                 values = d.xywh.view(-1).tolist()
                 # x_top_left, y_top_left, width, height = values
-                
+
                 x_center, y_center, width, height = values
-                
+
                 # Convert center coordinates to top-left coordinates
                 x_top_left = x_center - (width / 2)
                 y_top_left = y_center - (height / 2)
-                    
-                
-   
-                line = f"{frame_number},{id},{x_top_left:.2f},{y_top_left:.2f},{width:.2f},{height:.2f},1,-1,-1,-1"
 
+                line = f"{frame_number},{id},{x_top_left:.2f},{y_top_left:.2f},{width:.2f},{height:.2f},1,-1,-1,-1"
 
                 # print(f'line: {line}')
                 if id is not None:
-                    texts.append(line) 
+                    texts.append(line)
 
         if texts:
 
             with open(txt_file, 'a') as f:
                 f.writelines(text + '\n' for text in reversed(texts))
-            
 
     def save_crop(self, save_dir, file_name=Path('im.jpg')):
         """
@@ -364,8 +361,8 @@ class Results(SimpleClass):
         for d in self.boxes:
             save_one_box(d.xyxy,
                          self.orig_img.copy(),
-                         file=save_dir /
-                         self.names[int(d.cls)] / f'{file_name.stem}.jpg',
+                         file=save_dir
+                         / self.names[int(d.cls)] / f'{file_name.stem}.jpg',
                          BGR=True)
 
     def pandas(self):
@@ -387,8 +384,8 @@ class Results(SimpleClass):
         data = self.boxes.data.cpu().tolist()
         h, w = self.orig_shape if normalize else (1, 1)
         for i, row in enumerate(data):
-            box = {'x1': row[0] / w, 'y1': row[1] /
-                   h, 'x2': row[2] / w, 'y2': row[3] / h}
+            box = {'x1': row[0] / w, 'y1': row[1]
+                   / h, 'x2': row[2] / w, 'y2': row[3] / h}
             conf = row[4]
             id = int(row[5])
             name = self.names[id]
