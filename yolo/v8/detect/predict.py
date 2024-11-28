@@ -62,8 +62,8 @@ class DetectionPredictor(BasePredictor):
 
         # Apply Non-Max Suppression (NMS)
         preds = ops.non_max_suppression(
-            preds[1], # preds[1] is the output (1, 84, 8400) tensorrt inference output
-            # preds, # preds[0] is the output (1, 84, 8400) .pt inference output
+            # preds[1], # preds[1] is the output (1, 84, 8400) tensorrt inference output
+            preds, # preds[0] is the output (1, 84, 8400) .pt inference output
             self.args.conf,
             self.args.iou,
             agnostic=self.args.agnostic_nms,
@@ -115,8 +115,8 @@ class DetectionPredictor(BasePredictor):
         return results
 
     def extract_feature_map(self, pred, appearance_feature_layer):
-        # feature_map = pred[-1][appearance_feature_layer][0, :, :, :]  # (48, 368, 640) layerN feature map for .pt
-        feature_map = pred[0][0, :, :, :]  # layer0 feature map for tensorrt
+        feature_map = pred[-1][appearance_feature_layer][0, :, :, :]  # (48, 368, 640) layerN feature map for .pt
+        # feature_map = pred[0][0, :, :, :]  # layer0 feature map for tensorrt
 
         reshaped_feature_map = feature_map.permute(1, 2, 0)  # (368, 640, 48)
         feature_dim = reshaped_feature_map.shape[-1]
