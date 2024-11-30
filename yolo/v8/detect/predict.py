@@ -14,8 +14,8 @@ class DetectionPredictor(BasePredictor):
     def postprocess_original(self, preds, img, orig_imgs):
         """Post-processes predictions and returns a list of Results objects."""
         preds = ops.non_max_suppression(
-            preds[1], # preds[1] is the output (1, 84, 8400) tensorrt inference output
-            # preds, # preds[0] is the output (1, 84, 8400) .pt inference output
+            # preds[1], # preds[1] is the output (1, 84, 8400) tensorrt inference output
+            preds, # preds[0] is the output (1, 84, 8400) .pt inference output
             self.args.conf,
             self.args.iou,
             agnostic=self.args.agnostic_nms,
