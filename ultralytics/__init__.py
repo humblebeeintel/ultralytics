@@ -1,29 +1,15 @@
 # Ultralytics YOLO 🚀, AGPL-3.0 license
 
-__version__ = "8.3.53"
+__version__ = '8.0.135'
 
-import os
+from ultralytics.hub import start
+from ultralytics.vit.rtdetr import RTDETR
+from ultralytics.vit.sam import SAM
+from ultralytics.yolo.engine.model import YOLO
+from ultralytics.yolo.fastsam import FastSAM
+from ultralytics.yolo.nas import NAS
+from ultralytics.yolo.utils.checks import check_yolo as checks
+from ultralytics.yolo.utils.downloads import download
 
-# Set ENV variables (place before imports)
-if not os.environ.get("OMP_NUM_THREADS"):
-    os.environ["OMP_NUM_THREADS"] = "1"  # default for reduced CPU utilization during training
-
-from ultralytics.models import NAS, RTDETR, SAM, YOLO, FastSAM, YOLOWorld
-from ultralytics.utils import ASSETS, SETTINGS
-from ultralytics.utils.checks import check_yolo as checks
-from ultralytics.utils.downloads import download
-
-settings = SETTINGS
-__all__ = (
-    "__version__",
-    "ASSETS",
-    "YOLO",
-    "YOLOWorld",
-    "NAS",
-    "SAM",
-    "FastSAM",
-    "RTDETR",
-    "checks",
-    "download",
-    "settings",
-)
+# allow simpler import
+__all__ = '__version__', 'YOLO', 'NAS', 'SAM', 'FastSAM', 'RTDETR', 'checks', 'download', 'start'

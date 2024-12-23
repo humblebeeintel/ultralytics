@@ -6,12 +6,12 @@ import time
 import cv2
 import torch
 
-from ultralytics.utils.checks import check_requirements
-from ultralytics.utils.downloads import GITHUB_ASSETS_STEMS
+from ultralytics.yolo.utils.checks import check_requirements
+from ultralytics.yolo.utils.downloads import GITHUB_ASSET_STEMS
 
 
 def inference(model=None):
-    """Performs real-time object detection on video input using YOLO in a Streamlit web application."""
+    """Runs real-time object detection on video input using Ultralytics YOLOv8 in a Streamlit application."""
     check_requirements("streamlit>=1.29.0")  # scope imports for faster ultralytics package load speeds
     import streamlit as st
 
@@ -23,13 +23,13 @@ def inference(model=None):
     # Main title of streamlit application
     main_title_cfg = """<div><h1 style="color:#FF64DA; text-align:center; font-size:40px; 
                              font-family: 'Archivo', sans-serif; margin-top:-50px;margin-bottom:20px;">
-                    Ultralytics YOLO Streamlit Application
+                    Ultralytics YOLOv8 Streamlit Application
                     </h1></div>"""
 
     # Subtitle of streamlit application
     sub_title_cfg = """<div><h4 style="color:#042AFF; text-align:center; 
                     font-family: 'Archivo', sans-serif; margin-top:-15px; margin-bottom:50px;">
-                    Experience real-time object detection on your webcam with the power of Ultralytics YOLO! 🚀</h4>
+                    Experience real-time object detection on your webcam with the power of Ultralytics YOLOv8! 🚀</h4>
                     </div>"""
 
     # Set html page configuration
@@ -67,7 +67,7 @@ def inference(model=None):
         vid_file_name = 0
 
     # Add dropdown menu for model selection
-    available_models = [x.replace("yolo", "YOLO") for x in GITHUB_ASSETS_STEMS if x.startswith("yolo11")]
+    available_models = [x.replace("yolo", "YOLO") for x in GITHUB_ASSET_STEMS if x.startswith("yolov8")]
     if model:
         available_models.insert(0, model.split(".pt")[0])  # insert model without suffix as *.pt is added later
 
@@ -108,7 +108,7 @@ def inference(model=None):
                 st.warning("Failed to read frame from webcam. Please make sure the webcam is connected properly.")
                 break
 
-            prev_time = time.time()  # Store initial time for FPS calculation
+            prev_time = time.time()
 
             # Store model predictions
             if enable_trk == "Yes":
@@ -120,6 +120,7 @@ def inference(model=None):
             # Calculate model FPS
             curr_time = time.time()
             fps = 1 / (curr_time - prev_time)
+            prev_time = curr_time
 
             # display frame
             org_frame.image(frame, channels="BGR")
